@@ -3,13 +3,34 @@
 # Minerador de Bitcoin
 echo "Iniciando minerador de Bitcoin"
 
-miner_wallet="1C6asjDFVUcCkUBA7VfirZgufN7VXjEeiG" # Inserir a carteira Bitcoin aqui
-miner_pool="pool.bitcoin.com:443" # Inserir a URL do seu pool aqui
+# Inicializar variáveis com valores padrão
+miner_wallet=""
+miner_pool=""
+nthreads=1
+nbatches=1
 
-# Calculadora de hardware
-ncores=$(nproc) # Numero de nucleos/cores do processador
-let nthreads=$ncores-1 # Ajustar a largura de banda para núcleos,1 menos largura
-let nbatches=2 # Número de vetores que o processador suporta (1 ou 2)
+# Processar opções de linha de comando
+while getopts "w:p:t:b:" opt; do
+  case $opt in
+    w) miner_wallet="$OPTARG"
+    ;;
+    p) miner_pool="$OPTARG"
+    ;;
+    t) nthreads="$OPTARG"
+    ;;
+    b) nbatches="$OPTARG"
+    ;;
+    \?) echo "Opção inválida: -$OPTARG" >&2
+    exit 1
+    ;;
+  esac
+done
+
+# Verificar se as opções obrigatórias foram fornecidas
+if [[ -z "$miner_wallet" ]] || [[ -z "$miner_pool" ]]; then
+  echo "Erro: carteira e pool de mineração são obrigatórios"
+  exit 1
+fi
 
 # software do minerador 
 miner="minerd -a --url $miner_pool --userpass $miner_wallet:x -t $nthreads -B $nbatches"
